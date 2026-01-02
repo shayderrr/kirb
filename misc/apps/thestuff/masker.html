@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mask3r - Initializing...</title>
+    <meta name="description" content="Mask3r Application Loader">
+    <meta name="author" content="Blobby-Boi & Gemini AI">
+    <meta name="theme-color" content="#2c3e50">
+    <link rel="shortcut icon" type="image/png" href="https://raw.githubusercontent.com/Blobby-Boi/Mask3r/refs/heads/main/favicon.png">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ecf0f1;
+            color: #34495e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .loader-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 90%;
+            transition: all 0.3s ease;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: #3498db;
+            margin: 25px auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .error-box {
+            display: none;
+            background-color: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="loader-container" id="main-ui">
+        <div id="loading-zone">
+            <h1 style="margin:0">Mask3r</h1>
+            <p class="status-text" id="status-msg">Initializing application...</p>
+            <div class="spinner"></div>
+            <p style="font-size: 0.85em; color: #7f8c8d;">Fetching latest components from secure sources.</p>
+        </div>
+
+        <div id="error-zone" class="error-box">
+            <h3 style="margin-top:0">Initialization Failed</h3>
+            <p id="error-details"></p>
+            <button onclick="location.reload()" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold;">Retry Connection</button>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * CONFIGURATION
+         * We use JSDelivr as primary because it has better MIME-type handling 
+         * and global CDN speeds compared to raw GitHub links.
+         */
+        const sources = [
+            "https://cdn.jsdelivr.net/gh/Blobby-Boi/Mask3r@main/index.html",
+            "https://raw.githubusercontent.com/Blobby-Boi/Mask3r/main/index.html"
+        ];
+
+        const statusMsg = document.getElementById('status-msg');
+        const errorZone = document.getElementById('error-zone');
+        const errorDetails = document.getElementById('error-details');
+        const loadingZone = document.getElementById('loading-zone');
+
+        async function launchApp() {
+            for (let i = 0; i < sources.length; i++) {
+                const url = sources[i];
+                try {
+                    if (i > 0) statusMsg.innerText = "Attempting backup server...";
+                    
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const html = await response.text();
+                    
+                    // --- THE FIX ---
+                    // 1. Calculate the base directory of the fetched file
+                    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+                    
+                    // 2. Prepare the injection string
+                    // We add a <base> tag so all relative assets (js/css) load from GitHub
+                    const baseInjection = `<base href="${baseUrl}">`;
+                    
+                    // 3. Wipe the loader and inject the app
+                    document.open();
+                    document.write(baseInjection + html);
+                    document.close();
+                    
+                    return; // Success! Exit function
+                } catch (err) {
+                    console.warn(`Source ${i + 1} failed:`, err.message);
+                }
+            }
+
+            // If all sources fail
+            loadingZone.style.display = 'none';
+            errorZone.style.display = 'block';
+            errorDetails.innerText = "The application could not establish a connection to GitHub or JSDelivr. Please check your firewall or internet connection.";
+        }
+
+        // Start the process
+        window.onload = launchApp;
+    </script>
+</body>
+</html>
