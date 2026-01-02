@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirby Game Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Press Start 2P', cursive;
+            background-image: 
+                linear-gradient(rgba(255, 192, 203, 0.2), rgba(255, 192, 203, 0.2)),
+                url('https://giffiles.alphacoders.com/452/4529.gif'),
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: cover, cover, 20px 20px;
+            background-position: center center;
+            background-repeat: no-repeat, no-repeat, repeat;
+            background-attachment: fixed, fixed, fixed;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #ffc0cb; }
+        ::-webkit-scrollbar-thumb { background: #e75480; border: 2px solid #ffc0cb; }
+        ::-webkit-scrollbar-thumb:hover { background: #d73754; }
+
+        .filter-btn, #searchInput, .retro-modal { 
+            border: 4px solid #e75480; 
+            box-shadow: 4px 4px 0px #8c3b52; 
+            background-color: #ff91a4; 
+            color: #4b0082; 
+        }
+
+        .retro-modal { background-color: #ffe4e9; color: #333; }
+        .game-card { 
+            border-width: 4px; 
+            box-shadow: 4px 4px 0px #8c3b52; 
+            background-color: rgba(255, 228, 233, 0.9); 
+            color: #333; 
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; 
+        }
+        .game-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #8c3b52; }
+        .filter-btn.active, .filter-btn:hover { background-color: #FBBF24 !important; color: #3b0764 !important; border-color: #3b0764; }
+        .game-card img { image-rendering: pixelated; object-fit: cover; height: 16rem; width: 100%; }
+        
+        .watermark { position: fixed; bottom: 0; right: 0; padding: 8px; font-size: 0.75rem; color: #ffffff; opacity: 0.6; pointer-events: none; z-index: 1000; }
+    </style>
+</head>
+<body class="h-full antialiased">
+    <div class="watermark">made by samtheskeleton. on discord</div>
+
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-pink-300 tracking-tight" style="text-shadow: 2px 2px 0 #8c3b52;">KIRBY GAME COLLECTION</h1>
+        </header>
+
+        <div class="mb-8 max-w-xl mx-auto">
+            <input type="search" id="searchInput" placeholder="Search Kirby Games..." class="w-full text-indigo-900 rounded-none px-4 py-3 focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+        </div>
+
+        <div id="filterContainer" class="flex justify-center flex-wrap gap-3 mb-8">
+            <button class="filter-btn font-bold py-2 px-4 text-xs active" data-filter="all">ALL</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="nes">NES</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="gb">GB</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="snes">SNES</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="n64">N64</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="gba">GBA</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="nds">NDS</button>
+            <button class="filter-btn font-bold py-2 px-4 text-xs" data-filter="hack">HACKS</button>
+        </div>
+
+        <div id="gameCollection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            
+            <!-- GAME BOY -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Dream Land" data-platform="gb" data-type="official" data-core="gb" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Dream%20Land%20(USA%2C%20Europe).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Dream+Land" alt="Kirby's Dream Land">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Dream Land</h3><p class="text-xs text-gray-600 mt-1">GB - 1992</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Dream Land 2" data-platform="gb" data-type="official" data-core="gb" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Dream%20Land%202%20(USA%2C%20Europe)%20(SGB%20Enhanced).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Dream+Land+2" alt="Kirby's Dream Land 2">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Dream Land 2</h3><p class="text-xs text-gray-600 mt-1">GB - 1995</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Pinball Land" data-platform="gb" data-type="official" data-core="gb" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Pinball%20Land%20(USA%2C%20Europe).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Pinball+Land" alt="Kirby's Pinball Land">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Pinball Land</h3><p class="text-xs text-gray-600 mt-1">GB - 1993</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Block Ball" data-platform="gb" data-type="official" data-core="gb" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Block%20Ball%20(USA%2C%20Europe)%20(SGB%20Enhanced).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Block+Ball" alt="Kirby's Block Ball">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Block Ball</h3><p class="text-xs text-gray-600 mt-1">GB - 1995</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Star Stacker" data-platform="gb" data-type="official" data-core="gb" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Star%20Stacker%20(USA%2C%20Europe)%20(SGB%20Enhanced).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Star+Stacker" alt="Kirby's Star Stacker">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Star Stacker</h3><p class="text-xs text-gray-600 mt-1">GB - 1997</p></div>
+            </a>
+
+            <!-- NES -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Adventure" data-platform="nes" data-type="official" data-core="nes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Adventure%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Adventure" alt="Kirby's Adventure">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Adventure</h3><p class="text-xs text-gray-600 mt-1">NES - 1993</p></div>
+            </a>
+
+            <!-- SNES -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby Super Star" data-platform="snes" data-type="official" data-core="snes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20Super%20Star%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Super+Star" alt="Kirby Super Star">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby Super Star</h3><p class="text-xs text-gray-600 mt-1">SNES - 1996</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Dream Land 3" data-platform="snes" data-type="official" data-core="snes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Dream%20Land%203%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Dream+Land+3" alt="Kirby's Dream Land 3">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Dream Land 3</h3><p class="text-xs text-gray-600 mt-1">SNES - 1997</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Dream Course" data-platform="snes" data-type="official" data-core="snes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Dream%20Course%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Dream+Course" alt="Kirby's Dream Course">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Dream Course</h3><p class="text-xs text-gray-600 mt-1">SNES - 1994</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Avalanche" data-platform="snes" data-type="official" data-core="snes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Avalanche%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Avalanche" alt="Kirby's Avalanche">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby's Avalanche</h3><p class="text-xs text-gray-600 mt-1">SNES - 1995</p></div>
+            </a>
+
+            <!-- N64 -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby 64: The Crystal Shards" data-platform="n64" data-type="official" data-core="n64" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%2064%20-%20The%20Crystal%20Shards%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Kirby+64" alt="Kirby 64">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Kirby 64</h3><p class="text-xs text-gray-600 mt-1">N64 - 2000</p></div>
+            </a>
+
+            <!-- GBA -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby: Nightmare in Dream Land" data-platform="gba" data-type="official" data-core="gba" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20-%20Nightmare%20in%20Dream%20Land%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Nightmare" alt="Nightmare in Dream Land">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Nightmare in Dream Land</h3><p class="text-xs text-gray-600 mt-1">GBA - 2002</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby & The Amazing Mirror" data-platform="gba" data-type="official" data-core="gba" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20%26%20The%20Amazing%20Mirror%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Amazing+Mirror" alt="Amazing Mirror">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Amazing Mirror</h3><p class="text-xs text-gray-600 mt-1">GBA - 2004</p></div>
+            </a>
+
+            <!-- NDS -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby Super Star Ultra" data-platform="nds" data-type="official" data-core="nds" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20Super%20Star%20Ultra%20(USA).zip" data-load-type="merge" data-min-part="1" data-max-part="4">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Super+Star+Ultra" alt="Kirby Super Star Ultra">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Super Star Ultra</h3><p class="text-xs text-gray-600 mt-1">NDS - 2008</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby: Squeak Squad" data-platform="nds" data-type="official" data-core="nds" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20-%20Squeak%20Squad%20(USA).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Squeak+Squad" alt="Squeak Squad">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Squeak Squad</h3><p class="text-xs text-gray-600 mt-1">NDS - 2006</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby: Canvas Curse" data-platform="nds" data-type="official" data-core="nds" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20-%20Power%20Paintbrush%20(Europe)%20(En%2CFr%2CDe%2CEs%2CIt).zip" data-load-type="merge" data-min-part="1" data-max-part="2">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Canvas+Curse" alt="Canvas Curse">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Canvas Curse</h3><p class="text-xs text-gray-600 mt-1">NDS - 2005</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby Mass Attack" data-platform="nds" data-type="official" data-core="nds" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%20Mass%20Attack%20(Europe)%20(En%2CFr%2CDe%2CEs%2CIt).zip" data-load-type="merge" data-min-part="1" data-max-part="2">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Mass+Attack" alt="Kirby Mass Attack">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Mass Attack</h3><p class="text-xs text-gray-600 mt-1">NDS - 2011</p></div>
+            </a>
+
+            <!-- HACKS -->
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Adventure - Vegetable Valley Nightmare" data-platform="nes" data-type="hack" data-core="nes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Adventure%20-%20Vegetable%20Valley%20Nightmare%20(v1.05)%20(RhysOwens101)%20(Hack).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=VV+Nightmare" alt="VV Nightmare">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">V.V. Nightmare</h3><p class="text-xs text-gray-600 mt-1">NES - Hack</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby's Halloween Adventure" data-platform="nes" data-type="hack" data-core="nes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby's%20Halloween%20Adventure%20(v1.4)%20(Kirb-Star)%20(Hack).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Halloween" alt="Halloween Adventure">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Halloween Adv.</h3><p class="text-xs text-gray-600 mt-1">NES - Hack</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Grump's Dream Course" data-platform="snes" data-type="hack" data-core="snes" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Grump's%20Dream%20Course%20(Kirby's%20Dream%20Course)%20(v1.01)%20(MowseChao)%20(Hack).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Grump's+Course" alt="Grump's Dream Course">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Grump's Course</h3><p class="text-xs text-gray-600 mt-1">SNES - Hack</p></div>
+            </a>
+            <a href="#" class="game-card block overflow-hidden" data-title="Kirby 64: Whispy's Trials" data-platform="n64" data-type="hack" data-core="n64" data-rom-url="https://cdn.jsdelivr.net/gh/samtheskeleton/kirby-roms@main/Kirby%2064%20-%20Whispy's%20Trials%20(v2020-10-4)%20(jesusyoshi54)%20(Hack).zip">
+                <img src="https://placehold.co/300x420/ffc0cb/8c3b52?text=Whispy's+Trials" alt="Whispy's Trials">
+                <div class="p-3"><h3 class="font-bold text-sm truncate">Whispy's Trials</h3><p class="text-xs text-gray-600 mt-1">N64 - Hack</p></div>
+            </a>
+
+        </div>
+
+        <div id="emptyState" class="hidden text-center p-12 mt-8">
+            <h3 class="text-2xl font-semibold">NO GAMES FOUND</h3>
+        </div>
+    </div>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="retro-modal shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-bold mb-4" style="text-shadow: 2px 2px 0 #8c3b52;">Disclaimer</h3>
+            <p class="mb-6 text-sm leading-relaxed">Please note: The save feature for games is currently not working. We are looking into this issue. Thank you for your patience!</p>
+            <button id="closeDisclaimerBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-4 text-sm border-4 border-yellow-600">I Understand</button>
+        </div>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const disclaimerModal = document.getElementById('disclaimerModal');
+            const closeDisclaimerBtn = document.getElementById('closeDisclaimerBtn');
+            const searchInput = document.getElementById('searchInput');
+            const gameCollection = document.getElementById('gameCollection');
+            const emptyState = document.getElementById('emptyState');
+            const gameModal = document.getElementById('gameModal');
+            const filterButtons = document.querySelectorAll('#filterContainer .filter-btn');
+            
+            let activeFilter = 'all';
+
+            // --- FIXED: CLOSED DISCLAIMER LOGIC ---
+            if (closeDisclaimerBtn) {
+                closeDisclaimerBtn.addEventListener('click', () => {
+                    disclaimerModal.style.display = 'none'; // Force hide
+                    disclaimerModal.classList.add('hidden');
+                });
+            }
+
+            // --- Filtering Logic ---
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    activeFilter = button.dataset.filter;
+                    updateGameCards();
+                });
+            });
+
+            searchInput.addEventListener('input', updateGameCards);
+
+            function updateGameCards() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const cards = gameCollection.querySelectorAll('.game-card');
+                let foundAny = false;
+
+                cards.forEach(card => {
+                    const title = card.dataset.title.toLowerCase();
+                    const platform = card.dataset.platform;
+                    const type = card.dataset.type;
+
+                    const matchesSearch = title.includes(searchTerm);
+                    let matchesFilter = false;
+
+                    if (activeFilter === 'all') matchesFilter = true;
+                    else if (activeFilter === 'hack') matchesFilter = (type === 'hack');
+                    else matchesFilter = (platform === activeFilter);
+
+                    if (matchesSearch && matchesFilter) {
+                        card.style.display = 'block';
+                        foundAny = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                emptyState.style.display = foundAny ? 'none' : 'block';
+            }
+
+            // --- Emulator Handling ---
+            function showEmulatorModal(title, romUrl, loadType, core, minPart, maxPart) {
+                const baseLoaderPath = "https://cdn.jsdelivr.net/gh/genizy/emu@master/";
+                let emulatorHtml = `<!DOCTYPE html><html><head><style>body,html{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;}</style></head><body><div id="game" style="width:100%;height:100%;"></div><script>EJS_player="#game";EJS_core="${core}";EJS_gameName="${title}";EJS_startOnLoaded=true;EJS_pathtodata="${baseLoaderPath}";EJS_gameUrl="${romUrl}";<\/script><script src="${baseLoaderPath}loader.js"><\/script></body></html>`;
+
+                gameModal.innerHTML = `
+                    <div class="bg-gray-800 w-full max-w-4xl h-[80vh] flex flex-col p-4 border-4 border-pink-600" style="background-color: #ffe4e9;">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold text-pink-600">${title}</h3>
+                            <button id="closeModalBtn" class="bg-red-500 text-white px-3 py-1 text-xs border-2 border-black">CLOSE</button>
+                        </div>
+                        <div class="flex-grow bg-black">
+                            <iframe srcdoc="${emulatorHtml.replace(/"/g, '&quot;')}" class="w-full h-full border-0" allow="fullscreen"></iframe>
+                        </div>
+                    </div>`;
+                
+                gameModal.classList.remove('hidden');
+                gameModal.style.display = 'flex';
+
+                document.getElementById('closeModalBtn').onclick = () => {
+                    gameModal.classList.add('hidden');
+                    gameModal.style.display = 'none';
+                    gameModal.innerHTML = '';
+                };
+            }
+
+            gameCollection.addEventListener('click', (e) => {
+                const card = e.target.closest('.game-card');
+                if (card) {
+                    e.preventDefault();
+                    showEmulatorModal(
+                        card.dataset.title, 
+                        card.dataset.romUrl, 
+                        card.dataset.loadType || 'default', 
+                        card.dataset.core,
+                        card.dataset.minPart || '1',
+                        card.dataset.maxPart || '1'
+                    );
+                }
+            });
+        });
+    </script>
+</body>
+</html>
