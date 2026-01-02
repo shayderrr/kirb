@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Knight's Gym - Forge Your Spirit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050010; 
+            --text-color: #F0E68C;
+            --primary-accent: #FFD700; 
+            --meta-blue: #0047AB; 
+            --glass-bg: rgba(20, 10, 40, 0.9);
+            --glass-border: rgba(255, 215, 0, 0.3);
+            --font-main: 'Roboto Mono', monospace;
+            --font-display: 'Orbitron', sans-serif;
+            --current-edge-glow-gradient: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            cursor: none; /* Custom star cursor is used */
+        }
+
+        /* Prevent background from blocking clicks */
+        #monochrome-vortex-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none; 
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10; /* Above canvas */
+            width: 100%;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- THE CRITICAL FIX: Custom Cursor must not block clicks --- */
+        .custom-cursor {
+            position: fixed;
+            width: 25px;
+            height: 25px;
+            background-color: var(--primary-accent);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            pointer-events: none !important; /* CRITICAL: Mouse clicks pass through this */
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 8px var(--primary-accent));
+            transition: scale 0.2s ease;
+            left: -100px; /* Start off-screen */
+        }
+
+        .custom-cursor.hover {
+            scale: 2.5;
+            background-color: #fff;
+            filter: drop-shadow(0 0 15px #fff);
+        }
+
+        .title-glow {
+            font-family: var(--font-display);
+            font-weight: 900;
+            color: var(--primary-accent);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            margin: 0;
+            text-align: center;
+            font-size: clamp(2rem, 8vw, 4.5rem);
+        }
+
+        /* --- 3D Cards Grid --- */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 4rem auto;
+        }
+
+        .book-3d-container {
+            perspective: 1000px;
+            cursor: pointer; /* Force pointer to show on hover */
+        }
+
+        .book-cover-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            border-radius: 12px;
+        }
+
+        .book-3d-container:hover .book-cover-container {
+            transform: rotateY(-25deg) translateY(-15px);
+        }
+
+        .book-face {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            overflow: hidden;
+        }
+
+        .book-front { transform: translateZ(15px); background: var(--meta-blue); }
+        .book-back { transform: rotateY(180deg) translateZ(15px); background: #111; }
+
+        .book-cover-container::after {
+            content: '';
+            position: absolute;
+            inset: -10px;
+            background: var(--current-edge-glow-gradient);
+            border-radius: 20px;
+            filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.4s;
+            z-index: -1;
+        }
+
+        .book-3d-container:hover .book-cover-container::after { opacity: 0.6; }
+
+        /* --- Modal System --- */
+        .card-content {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none; /* CRITICAL FIX: display: none prevents blocking when hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .card-content.active { display: flex; }
+
+        .content-container {
+            background: var(--glass-bg);
+            border: 2px solid var(--primary-accent);
+            border-radius: 15px;
+            padding: clamp(20px, 5vw, 40px);
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 30px rgba(0,0,0,1);
+        }
+
+        .content-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-accent);
+            border: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            font-family: var(--font-main);
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .tab-button.active {
+            background: var(--primary-accent);
+            color: #000;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+        .close-button {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--primary-accent); 
+            border: none;
+            color: #000;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* SVG Inner Styling */
+        .svg-title { font-family: var(--font-display); fill: var(--primary-accent); font-weight: bold; font-size: 16px; text-transform: uppercase; }
+        .icon-text { font-size: 60px; }
+        .description-text { font-family: var(--font-main); fill: #fff; font-size: 11px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="custom-cursor" id="cursor"></div>
+    <canvas id="monochrome-vortex-canvas"></canvas>
+
+    <div class="content-wrapper">
+        <header>
+            <h1 class="title-glow">Meta Knight's Gym</h1>
+            <p class="header-subtitle">Training without resolve is just movement. Forge your spirit into a blade of pure steel.</p>
+        </header>
+
+        <main class="cards-container">
+            <!-- Cut Tips -->
+            <div class="book-3d-container" data-card="cut" data-glow="linear-gradient(45deg, #00E0FF, #0047AB)" data-color="#003340" data-title="Cut" data-desc="Shred fat, reveal edge." data-icon="✂️">
+                <div class="book-cover-container">
+                    <div class="book-face book-front"></div>
+                    <div class="book-face book-back"></div>
+                </div>
+            </div>
+
+            <!-- Bulk -->
+            <div class="book-3d-container" data-card="bulk" data-glow="linear-gradient(45deg, #FF00CC, #440044)" data-color="#400033" data-title="Bulk" data-desc="Massive force." data-icon="📈">
+                <div class="book-cover-container">
+                    <div class="book-face book-front"></div>
+                    <div class="book-face book-back"></div>
+                </div>
+            </div>
+
+            <!-- Abs -->
+            <div class="book-3d-container" data-card="abs" data-glow="linear-gradient(45deg, #00FFCC, #004433)" data-color="#004033" data-title="Abs" data-desc="A core of iron." data-icon="🔥">
+                <div class="book-cover-container">
+                    <div class="book-face book-front"></div>
+                    <div class="book-face book-back"></div>
+                </div>
+            </div>
+
+            <!-- Arms -->
+            <div class="book-3d-container" data-card="arms" data-glow="linear-gradient(45deg, #66FF00, #114400)" data-color="#1A4000" data-title="Arms" data-desc="Strength for the sword." data-icon="💪">
+                <div class="book-cover-container">
+                    <div class="book-face book-front"></div>
+                    <div class="book-face book-back"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="card-content" id="modal-cut">
+        <div class="content-container">
+            <button class="close-button">&times;</button>
+            <h2 class="title-glow" style="font-size: 1.8rem; text-align: left; margin-bottom: 20px;">Cutting Protocol</h2>
+            <div class="content-tabs">
+                <button class="tab-button active" data-tab="cut-1">Skinny-Fat</button>
+                <button class="tab-button" data-tab="cut-2">High Bodyfat</button>
+            </div>
+            <div id="cut-1" class="tab-content active">
+                <p><strong>The Mini-Cut:</strong> Do not starve. Aim for high protein (2g per kg) and heavy resistance training. You must protect the muscle you have while chipping away the armor of fat.</p>
+            </div>
+            <div id="cut-2" class="tab-content">
+                <p><strong>The Siege:</strong> A 500-700 calorie deficit is your primary weapon. Incorporate LISS (walking) for 30 minutes daily. Consistency is the only path to victory.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-content" id="modal-bulk">
+        <div class="content-container">
+            <button class="close-button">&times;</button>
+            <h2 class="title-glow" style="font-size: 1.8rem; text-align: left; margin-bottom: 20px;">Mass Protocol</h2>
+            <div class="content-tabs">
+                <button class="tab-button active" data-tab="bulk-1">Lean Bulk</button>
+                <button class="tab-button" data-tab="bulk-2">Hard Gainer</button>
+            </div>
+            <div id="bulk-1" class="tab-content active">
+                <p><strong>Controlled Growth:</strong> +250 calories above maintenance. Focus on compound lifts (Squats, Deadlifts). Grow without losing your speed.</p>
+            </div>
+            <div id="bulk-2" class="tab-content">
+                <p><strong>High Calorie Command:</strong> Liquid calories are your ally. Add peanut butter and oats to shakes. You must eat even when the spirit is unwilling.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- More modals can be added following the same modal-[id] pattern -->
+
+    <script>
+        // --- 1. Background Animation ---
+        function initVortex() {
+            const canvas = document.getElementById('monochrome-vortex-canvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = window.innerWidth;
+            let h = canvas.height = window.innerHeight;
+            let particles = [];
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.z = Math.random() * w;
+                }
+                update() {
+                    this.z -= 4;
+                    if (this.z <= 0) this.reset();
+                }
+                draw() {
+                    let x = (this.x - w/2) * (w/this.z) + w/2;
+                    let y = (this.y - h/2) * (w/this.z) + h/2;
+                    let s = w/this.z * 0.5;
+                    ctx.fillStyle = this.z < w/2 ? '#FFD700' : '#0047AB';
+                    ctx.globalAlpha = 1 - (this.z / w);
+                    ctx.beginPath();
+                    ctx.arc(x, y, s, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            for(let i=0; i<150; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.fillStyle = 'rgba(5, 0, 16, 0.2)';
+                ctx.fillRect(0, 0, w, h);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+            window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+        }
+
+        // --- 2. Card Generation ---
+        function generateSVG(color, title, desc, icon) {
+            return `
+                <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="300" fill="${color}" rx="12" />
+                    <text x="100" y="50" text-anchor="middle" class="svg-title">${title}</text>
+                    <text x="100" y="150" text-anchor="middle" class="icon-text">${icon}</text>
+                    <text x="100" y="240" text-anchor="middle" class="description-text">${desc}</text>
+                </svg>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initVortex();
+            const cursor = document.getElementById('cursor');
+
+            // --- Card Logic ---
+            document.querySelectorAll('.book-3d-container').forEach(card => {
+                const d = card.dataset;
+                const front = card.querySelector('.book-front');
+                front.innerHTML = generateSVG(d.color, d.title, d.desc, d.icon);
+
+                card.addEventListener('mouseenter', () => {
+                    document.documentElement.style.setProperty('--current-edge-glow-gradient', d.glow);
+                    cursor.classList.add('hover');
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hover');
+                });
+
+                card.addEventListener('click', () => {
+                    const modal = document.getElementById(`modal-${d.card}`);
+                    if (modal) modal.classList.add('active');
+                });
+            });
+
+            // --- Modal Logic ---
+            document.querySelectorAll('.card-content').forEach(modal => {
+                // Close button
+                modal.querySelector('.close-button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    modal.classList.remove('active');
+                });
+
+                // Tab switching
+                const tabs = modal.querySelectorAll('.tab-button');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        modal.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                        modal.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        tab.classList.add('active');
+                        modal.querySelector(`#${tab.dataset.tab}`).classList.add('active');
+                    });
+                });
+            });
+
+            // --- Global Click listener for overlay ---
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('card-content')) {
+                    e.target.classList.remove('active');
+                }
+            });
+
+            // --- Cursor Follow ---
+            window.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+        });
+    </script>
+</body>
+</html>
