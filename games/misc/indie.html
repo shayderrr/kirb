@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Game Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .font-brand { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        
+        .game-card {
+            background: #1e293b;
+            border: 2px solid #334155;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            border-color: #fbbf24;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+        .game-card img {
+            height: 160px;
+            width: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+        
+        #game-modal iframe { background: #000; width: 100%; height: 100%; border: none; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 5px; }
+
+        .loader-bar {
+            height: 4px;
+            width: 0%;
+            background: #fbbf24;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="py-10 px-6 text-center relative border-b border-white/10">
+        <h1 class="font-brand text-6xl md:text-8xl text-yellow-400 drop-shadow-2xl">THE GAME VAULT</h1>
+        <p class="text-gray-400 mt-2 tracking-widest uppercase text-sm">Every Port. Every Console. Fixed.</p>
+        
+        <button id="jumpOut" class="absolute top-6 right-6 bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6m0 0v6m0-6L10 14"/></svg>
+        </button>
+    </header>
+
+    <!-- Search/Filters -->
+    <div class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <input type="text" id="search" placeholder="Search 50+ games..." class="w-full md:max-w-md bg-slate-800 border border-slate-700 rounded-lg px-6 py-3 outline-none focus:ring-2 focus:ring-yellow-400">
+        <div class="flex flex-wrap justify-center gap-2" id="filterContainer">
+            <button class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-xs font-bold hover:bg-yellow-400 hover:text-black transition-colors" data-filter="all">ALL</button>
+            <button class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-xs font-bold hover:bg-yellow-400 hover:text-black transition-colors" data-filter="indie">INDIE</button>
+            <button class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-xs font-bold hover:bg-yellow-400 hover:text-black transition-colors" data-filter="nds">NDS</button>
+            <button class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-xs font-bold hover:bg-yellow-400 hover:text-black transition-colors" data-filter="gba">GBA</button>
+            <button class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-xs font-bold hover:bg-yellow-400 hover:text-black transition-colors" data-filter="nes">NES/SNES</button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <main class="container mx-auto px-4 pb-20">
+        <div id="gameGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <!-- Dynamically Loaded Games -->
+        </div>
+    </main>
+
+    <!-- Game Modal -->
+    <div id="game-modal" class="fixed inset-0 z-[200] bg-black/95 flex flex-col hidden">
+        <div class="bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center">
+            <h2 id="modal-title" class="font-brand text-2xl text-yellow-400">LOADING...</h2>
+            <div class="flex gap-4">
+                <button id="fs-btn" class="text-xs font-bold text-gray-400 hover:text-white">FULLSCREEN</button>
+                <button id="close-modal" class="text-red-500 font-bold text-2xl px-2">×</button>
+            </div>
+        </div>
+        <div class="flex-grow relative">
+            <div id="modal-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10">
+                <div class="w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                <p id="load-status" class="mt-4 font-bold text-yellow-400 text-xs tracking-widest uppercase">Stitching Bricks...</p>
+            </div>
+            <iframe id="game-frame" allow="autoplay; pointer-lock; fullscreen"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const games = [
+            // INDIE GAMES (Uses Web Port Base URL logic)
+            { title: "Undertale", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/391540/header.jpg", repo: "funpeptobismoatey/undertale-web-port", path: "index.html" },
+            { title: "Hollow Knight", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/367520/header.jpg", repo: "web-ports/hollow-knight", path: "index.html" },
+            { title: "Cuphead", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/268910/header.jpg", repo: "web-ports/cuphead", path: "index.html" },
+            { title: "Getting Over It", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/240720/header.jpg", repo: "genizy/web-port", path: "getting-over-it/index.html" },
+            { title: "Buckshot Roulette", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2835570/header.jpg", repo: "genizy/web-port", path: "buckshot-roulette/index.html" },
+            { title: "Bendy & The Ink Machine", tag: "indie", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/622650/header.jpg", repo: "genizy/web-port", path: "bendy/index.html" },
+            
+            // LEGO COLLECTION (NDS - Merged)
+            { title: "LEGO Batman", tag: "nds", parts: 4, img: "https://m.media-amazon.com/images/I/61MvUf9vGEL._AC_UF1000,1000_QL80_.jpg", repo: "bubbls/ugss", path: "LEGO%20Batman%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs)/LEGO%20Batman%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Star Wars: TCS", tag: "nds", parts: 4, img: "https://m.media-amazon.com/images/I/61NfIqV2k3L._AC_UF1000,1000_QL80_.jpg", repo: "bubbls/ugss", path: "LEGO%20Star%20Wars%20-%20The%20Complete%20Saga%20(USA)/LEGO%20Star%20Wars%20-%20The%20Complete%20Saga%20(USA).nds" },
+            
+            // GTA COLLECTION
+            { title: "GTA: Chinatown Wars", tag: "nds", parts: 7, img: "https://m.media-amazon.com/images/I/61UvJAnm6OL._AC_UF1000,1000_QL80_.jpg", repo: "bubbls/ugss", path: "Grand%20Theft%20Auto%20-%20Chinatown%20Wars%20(USA)%20(En%2CFr%2CDe%2CEs%2CIt)/Grand%20Theft%20Auto%20-%20Chinatown%20Wars%20(USA)%20(En%2CFr%2CDe%2CEs%2CIt).nds" },
+            { title: "GTA Advance", tag: "gba", img: "https://m.media-amazon.com/images/I/51X5X8D7QYL.jpg", repo: "ethanaobrien/emulator-roms", path: "gba/Grand%20Theft%20Auto%20Advance%20(U)(Independent).zip", core: "gba" },
+            
+            // KIRBY
+            { title: "Kirby's Dream Land", tag: "nes", img: "https://m.media-amazon.com/images/I/51T9Y4N4BTL.jpg", repo: "samtheskeleton/kirby-roms", path: "Kirby's%20Dream%20Land%20(USA%2C%20Europe).zip", core: "gb" },
+            { title: "Kirby Super Star", tag: "nes", img: "https://m.media-amazon.com/images/I/51X9B4N4BTL.jpg", repo: "samtheskeleton/kirby-roms", path: "Kirby%20Super%20Star%20(USA).zip", core: "snes" },
+            
+            // DRAGON BALL
+            { title: "DBZ: Legacy of Goku II", tag: "gba", img: "https://m.media-amazon.com/images/I/51R9Y4N4BTL.jpg", repo: "samtheskeleton/dbz-gba", path: "Dragon%20Ball%20Z%20-%20The%20Legacy%20of%20Goku%20II%20(USA).zip", core: "gba" }
+        ];
+
+        const grid = document.getElementById('gameGrid');
+        const modal = document.getElementById('game-modal');
+        const frame = document.getElementById('game-frame');
+        const loader = document.getElementById('modal-loader');
+
+        function render(filter = 'all', search = '') {
+            grid.innerHTML = '';
+            games.filter(g => (filter === 'all' || g.tag === filter) && g.title.toLowerCase().includes(search.toLowerCase()))
+                 .forEach((g, i) => {
+                const card = document.createElement('div');
+                card.className = "game-card rounded-xl";
+                card.dataset.index = i;
+                card.innerHTML = `<img src="${g.img}" alt="Cover"><div class="p-4"><h3 class="font-bold text-sm truncate">${g.title}</h3><p class="text-[10px] text-gray-500 uppercase font-bold mt-1">${g.tag}</p></div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        async function launchGame(game) {
+            const isIndie = game.tag === 'indie';
+            const baseUrl = `https://cdn.jsdelivr.net/gh/${game.repo}@main/${game.path}`;
+            
+            document.getElementById('modal-title').innerText = game.title;
+            modal.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            frame.srcdoc = "";
+
+            let finalHtml = "";
+
+            if (isIndie) {
+                // WEB PORT LOGIC
+                const rootFolder = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+                finalHtml = `<!DOCTYPE html><html><head><base href="${rootFolder}"><style>body,html{margin:0;padding:0;height:100%;overflow:hidden;background:#000}</style></head><body><script>
+                    fetch("${baseUrl}").then(r => r.text()).then(html => {
+                        document.open(); document.write(html); document.close();
+                    });
+                <\/script></body></html>`;
+            } else if (game.parts) {
+                // MULTI-PART NDS LOGIC
+                const partsScript = `
+                    async function init() {
+                        const parts = [];
+                        for(let i=1; i<=${game.parts}; i++) {
+                            const r = await fetch("${baseUrl}.part" + i);
+                            parts.push(await r.arrayBuffer());
+                        }
+                        const blob = URL.createObjectURL(new Blob(parts));
+                        window.EJS_player = "#game"; window.EJS_core = "nds"; window.EJS_gameUrl = blob;
+                        window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/genizy/emu@master/";
+                        window.EJS_startOnLoaded = true;
+                        const s = document.createElement('script'); s.src = window.EJS_pathtodata + "loader.js";
+                        document.body.appendChild(s);
+                    }
+                    init();
+                `;
+                finalHtml = `<!DOCTYPE html><html><body style="margin:0;background:#000"><div id="game" style="width:100%;height:100vh"></div><script>${partsScript}<\/script></body></html>`;
+            } else {
+                // STANDARD ROM LOGIC
+                finalHtml = `<!DOCTYPE html><html><body style="margin:0;background:#000"><div id="game" style="width:100%;height:100vh"></div><script>
+                    window.EJS_player = "#game"; window.EJS_core = "${game.core}"; window.EJS_gameUrl = "${baseUrl}";
+                    window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/genizy/emu@master/";
+                    window.EJS_startOnLoaded = true;
+                    const s = document.createElement('script'); s.src = window.EJS_pathtodata + "loader.js";
+                    document.body.appendChild(s);
+                <\/script></body></html>`;
+            }
+
+            frame.srcdoc = finalHtml;
+            setTimeout(() => loader.classList.add('hidden'), 3500);
+        }
+
+        // Global Click Listener (Fixes the "Onclick" issue)
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.game-card');
+            if (card) {
+                const title = card.querySelector('h3').innerText;
+                const game = games.find(g => g.title === title);
+                if (game) launchGame(game);
+            }
+        });
+
+        document.getElementById('close-modal').onclick = () => {
+            modal.classList.add('hidden');
+            frame.srcdoc = "";
+        };
+
+        document.getElementById('search').oninput = (e) => render('all', e.target.value);
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => render(btn.dataset.filter);
+        });
+
+        document.getElementById('jumpOut').onclick = () => window.open(URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})), '_blank');
+
+        render();
+    </script>
+</body>
+</html>
