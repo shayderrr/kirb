@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEGO DS Complete Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://www.lego.com/cdn/cs/set/assets/blt8a5238355bf5e5d6/Z8_Prisonbreak.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .font-lego { font-family: 'Lilita One', cursive; }
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background-color: #facc15; border-radius: 6px; border: 3px solid #111827; }
+
+        .game-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 4px solid #374151;
+        }
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(250, 204, 21, 0.4);
+            border-color: #facc15;
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen pb-12">
+
+    <header class="text-center py-12 px-4 relative">
+        <h1 class="font-lego text-6xl md:text-8xl text-yellow-400 drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+            LEGO DS COLLECTION
+        </h1>
+        <p class="text-xl text-white font-bold mt-4 bg-black/40 inline-block px-4 py-1 rounded-full backdrop-blur-sm">
+            EVERY BRICK. EVERY GAME.
+        </p>
+
+        <button id="mainJumpoutButton" class="absolute top-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl shadow-2xl transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </button>
+    </header>
+
+    <div class="flex justify-center px-4 mb-12">
+        <input type="search" id="searchInput" placeholder="Search Batman, Star Wars, Harry Potter..." class="w-full max-w-2xl p-5 rounded-2xl bg-gray-900/90 text-white border-4 border-gray-700 focus:border-yellow-400 focus:outline-none text-xl shadow-2xl transition-all">
+    </div>
+
+    <main class="container mx-auto px-4">
+        <div id="gameGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+        <div id="noGamesMessage" class="hidden text-center py-20">
+            <h2 class="font-lego text-5xl text-yellow-400">NO BRICKS FOUND!</h2>
+        </div>
+    </main>
+
+    <div id="gameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden bg-black/95 backdrop-blur-md"></div>
+
+    <script>
+        const CDN_BASE = "https://cdn.jsdelivr.net/gh/bubbls/ugss@main/";
+
+        const games = [
+            { title: "LEGO Batman: The Videogame", img: "https://m.media-amazon.com/images/I/61MvUf9vGEL._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Batman%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs)/LEGO%20Batman%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Batman 2: DC Super Heroes", img: "https://m.media-amazon.com/images/I/91Y2t-TntJL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Batman%202%20-%20DC%20Super%20Heroes%20(USA)%20(En%2CFr%2CEs%2CPt)/LEGO%20Batman%202%20-%20DC%20Super%20Heroes%20(USA)%20(En%2CFr%2CEs%2CPt).nds" },
+            { title: "LEGO Star Wars: Complete Saga", img: "https://m.media-amazon.com/images/I/61NfIqV2k3L._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Star%20Wars%20-%20The%20Complete%20Saga%20(USA)/LEGO%20Star%20Wars%20-%20The%20Complete%20Saga%20(USA).nds" },
+            { title: "LEGO Star Wars III: Clone Wars", img: "https://m.media-amazon.com/images/I/81I-u8t7RjL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Star%20Wars%20III%20-%20The%20Clone%20Wars%20(USA)%20(En%2CFr%2CEs)/LEGO%20Star%20Wars%20III%20-%20The%20Clone%20Wars%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Harry Potter: Years 1-4", img: "https://m.media-amazon.com/images/I/61O2O6z8IIL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Harry%20Potter%20-%20Years%201-4%20(USA)%20(En%2CFr%2CEs)/LEGO%20Harry%20Potter%20-%20Years%201-4%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Harry Potter: Years 5-7", img: "https://m.media-amazon.com/images/I/81e76Vp9hXL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Harry%20Potter%20-%20Years%205-7%20(USA)%20(En%2CFr%2CEs)/LEGO%20Harry%20Potter%20-%20Years%205-7%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Indiana Jones 1", img: "https://m.media-amazon.com/images/I/6166KzY0e9L._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Indiana%20Jones%20-%20The%20Original%20Adventures%20(USA)%20(En%2CFr%2CDe%2CEs%2CIt%2CDa)/LEGO%20Indiana%20Jones%20-%20The%20Original%20Adventures%20(USA)%20(En%2CFr%2CDe%2CEs%2CIt%2CDa).nds" },
+            { title: "LEGO Indiana Jones 2", img: "https://m.media-amazon.com/images/I/91rY93L9mJL._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Indiana%20Jones%202%20-%20The%20Adventure%20Continues%20(USA)%20(En%2CFr%2CEs)/LEGO%20Indiana%20Jones%202%20-%20The%20Adventure%20Continues%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Pirates of the Caribbean", img: "https://m.media-amazon.com/images/I/61z-Qd4-HmL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Pirates%20of%20the%20Caribbean%20-%20The%20Video%20Game%20(USA)%20(En%2CFr%2CEs)/LEGO%20Pirates%20of%20the%20Caribbean%20-%20The%20Video%20Game%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Ninjago: The Videogame", img: "https://m.media-amazon.com/images/I/61R-jXpXkML._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Ninjago%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs)/LEGO%20Ninjago%20-%20The%20Videogame%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Lord of the Rings", img: "https://m.media-amazon.com/images/I/81lS5X1fHkL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20The%20Lord%20of%20the%20Rings%20(USA)%20(En%2CFr%2CEs)/LEGO%20The%20Lord%20of%20the%20Rings%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Battles", img: "https://m.media-amazon.com/images/I/61C-B7BwPPL._AC_UF1000,1000_QL80_.jpg", parts: 2, path: "LEGO%20Battles%20(USA)%20(En%2CFr%2CEs)/LEGO%20Battles%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Battles: Ninjago", img: "https://m.media-amazon.com/images/I/61U0T7YVp5L._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Battles%20-%20Ninjago%20(USA)%20(En%2CFr%2CEs)/LEGO%20Battles%20-%20Ninjago%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Rock Band", img: "https://m.media-amazon.com/images/I/61iVvA98BPL._AC_UF1000,1000_QL80_.jpg", parts: 4, path: "LEGO%20Rock%20Band%20(USA)%20(En%2CFr%2CEs)/LEGO%20Rock%20Band%20(USA)%20(En%2CFr%2CEs).nds" },
+            { title: "LEGO Legends of Chima", img: "https://m.media-amazon.com/images/I/91tT846v-mL._AC_UF1000,1000_QL80_.jpg", parts: 7, path: "LEGO%20Legends%20of%20Chima%20-%20Laval's%20Journey%20(USA)%20(En%2CFr%2CEs)/LEGO%20Legends%20of%20Chima%20-%20Laval's%20Journey%20(USA)%20(En%2CFr%2CEs).nds" }
+        ];
+
+        const gameGrid = document.getElementById('gameGrid');
+        const searchInput = document.getElementById('searchInput');
+        const gameModal = document.getElementById('gameModal');
+
+        function renderGames(filter = '') {
+            gameGrid.innerHTML = '';
+            const filtered = games.filter(g => g.title.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach((game, idx) => {
+                const card = document.createElement('div');
+                card.className = 'game-card bg-gray-800 rounded-2xl overflow-hidden flex flex-col';
+                card.onclick = () => launchGame(game);
+                card.innerHTML = `
+                    <img src="${game.img}" class="w-full h-56 object-cover" alt="Cover">
+                    <div class="p-5 flex-grow bg-gradient-to-b from-gray-800 to-gray-900">
+                        <h3 class="font-lego text-2xl text-yellow-400 mb-2">${game.title}</h3>
+                        <div class="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            <span>Nintendo DS</span>
+                            <span class="bg-yellow-400 text-black px-3 py-1 rounded-full">PLAY</span>
+                        </div>
+                    </div>`;
+                gameGrid.appendChild(card);
+            });
+        }
+
+        function launchGame(game) {
+            const romUrl = CDN_BASE + game.path;
+            const emuHtml = `
+            <!DOCTYPE html><html><head><style>body,html{margin:0;padding:0;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-family:sans-serif;} #progress{color:#facc15;font-weight:bold;font-size:1.5rem;}</style></head>
+            <body><div id="game" style="width:100%;height:100vh"></div><div id="load"> <p id="progress">BRICKING TOGETHER ROM: 0%</p></div>
+            <script>
+                async function init() {
+                    const parts = [];
+                    try {
+                        for(let i=1; i<=${game.parts}; i++) {
+                            const r = await fetch("${romUrl}.part" + i);
+                            if(!r.ok) throw new Error("Part " + i + " Failed");
+                            parts.push(await r.arrayBuffer());
+                            document.getElementById('progress').innerText = "STITCHING BRICKS: " + Math.round((i/${game.parts})*100) + "%";
+                        }
+                        const blob = URL.createObjectURL(new Blob(parts));
+                        document.getElementById('load').remove();
+                        window.EJS_player = "#game"; window.EJS_core = "nds"; window.EJS_gameUrl = blob;
+                        window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/genizy/emu@master/";
+                        window.EJS_startOnLoaded = true;
+                        const s = document.createElement('script'); s.src = "https://cdn.jsdelivr.net/gh/genizy/emu@master/loader.js";
+                        document.body.appendChild(s);
+                    } catch(e) { document.getElementById('progress').innerText = "ERROR: " + e.message; document.getElementById('progress').style.color="red"; }
+                }
+                init();
+            <\/script></body></html>`;
+
+            gameModal.innerHTML = `
+                <div class="bg-gray-900 w-full max-w-5xl h-[90vh] flex flex-col rounded-3xl overflow-hidden border-4 border-yellow-400">
+                    <div class="bg-gray-800 p-4 flex justify-between items-center border-b-4 border-gray-700">
+                        <h2 class="font-lego text-2xl text-yellow-400">${game.title}</h2>
+                        <div class="flex gap-4">
+                            <button onclick="document.getElementById('emu-frame').requestFullscreen()" class="bg-blue-600 text-white p-2 rounded-lg">FS</button>
+                            <button onclick="closeModal()" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold">CLOSE</button>
+                        </div>
+                    </div>
+                    <iframe id="emu-frame" srcdoc="${emuHtml.replace(/"/g, '&quot;')}" class="flex-grow w-full border-none"></iframe>
+                </div>`;
+            gameModal.classList.remove('hidden');
+        }
+
+        window.closeModal = () => { gameModal.classList.add('hidden'); gameModal.innerHTML = ''; };
+        searchInput.addEventListener('input', (e) => renderGames(e.target.value));
+        document.getElementById('mainJumpoutButton').onclick = () => window.open(URL.createObjectURL(new Blob([document.documentElement.outerHTML], {type:'text/html'})), '_blank');
+        renderGames();
+    </script>
+</body>
+</html>
